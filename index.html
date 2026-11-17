@@ -4,21 +4,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GCSE Examination System</title>
+<title>GCSE Exam Scanner</title>
 
-<script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
     margin: 0;
     min-height: 100vh;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     padding: 20px;
     background: #101827;
     color: white;
@@ -35,33 +33,14 @@ body {
     box-shadow: 0 12px 35px #0006;
 }
 
-.logo {
-    font-size: 13px;
-    letter-spacing: 3px;
-    color: #75aaff;
-    font-weight: bold;
-}
-
-h1 {
-    margin: 12px 0 5px;
-    font-size: 28px;
-}
-
-.subtitle {
-    color: #aebdd0;
-    margin-bottom: 25px;
-}
+h1 { margin-bottom: 5px; }
+.subtitle { color: #aebdd0; }
 
 .step {
     background: #263951;
     padding: 20px;
     border-radius: 12px;
-    margin-top: 18px;
-}
-
-.step h2 {
-    margin-top: 0;
-    font-size: 20px;
+    margin-top: 20px;
 }
 
 input {
@@ -73,11 +52,6 @@ input {
     background: #101827;
     color: white;
     font-size: 16px;
-    outline: none;
-}
-
-input:focus {
-    border-color: #3988ff;
 }
 
 button {
@@ -93,57 +67,48 @@ button {
     cursor: pointer;
 }
 
-button:hover {
-    filter: brightness(1.12);
-}
+button:hover { filter: brightness(1.12); }
 
-.cancel-button {
+.cancel {
     background: #c43e48;
 }
 
-.secondary-button {
+.secondary {
     background: #465a73;
 }
 
-video {
+.hidden { display: none !important; }
+
+#reader {
     width: 100%;
-    margin-top: 15px;
+    margin: 15px auto;
+    overflow: hidden;
     border-radius: 10px;
-    background: black;
 }
 
-.hidden {
-    display: none !important;
+#reader video {
+    border-radius: 10px;
 }
 
 #timer {
-    font-size: 66px;
+    font-size: 65px;
     font-weight: bold;
     color: #69a8ff;
     margin: 25px 0;
     font-variant-numeric: tabular-nums;
 }
 
-#timer.finished {
-    color: #ff7373;
-}
-
 .status {
-    padding: 13px;
     margin-top: 18px;
-    border-radius: 9px;
+    padding: 13px;
     background: #293b53;
+    border-radius: 9px;
     overflow-wrap: anywhere;
     font-size: 14px;
 }
 
-.success {
-    color: #62e6a0;
-}
-
-.error {
-    color: #ff8585;
-}
+.success { color: #62e6a0; }
+.error { color: #ff8585; }
 
 .details {
     color: #aebdd0;
@@ -152,9 +117,9 @@ video {
 }
 
 .footer {
-    margin-top: 25px;
     color: #75869d;
     font-size: 12px;
+    margin-top: 25px;
 }
 </style>
 </head>
@@ -163,66 +128,58 @@ video {
 
 <div class="container">
 
-    <div class="logo">EXAMINATION SERVICES</div>
-
     <h1>GCSE Exam Scanner</h1>
+    <p class="subtitle">Examination access system</p>
 
-    <p class="subtitle">
-        Examination access and timing system
-    </p>
-
-    <!-- BARCODE SECTION -->
+    <!-- BARCODE -->
     <section id="scannerSection">
 
         <div class="step">
-            <h2>01 — Barcode Verification</h2>
+            <h2>01 — Scan Barcode</h2>
 
             <p class="details">
-                Scan your examination barcode to continue.
+                Position your barcode inside the camera frame.
             </p>
 
-            <video id="video" autoplay muted playsinline></video>
+            <div id="reader"></div>
 
-            <button id="startCameraButton">
-                Start Camera Scanner
+            <button id="startButton">
+                Start Barcode Scanner
             </button>
 
-            <button id="stopCameraButton" class="secondary-button">
+            <button id="stopButton" class="secondary">
                 Stop Camera
             </button>
 
-            <p class="details">Or enter your barcode manually:</p>
+            <p class="details">Manual barcode entry</p>
 
             <input
                 id="barcodeInput"
-                type="text"
                 placeholder="Enter barcode"
                 autocomplete="off"
             >
 
-            <button id="submitBarcodeButton">
+            <button id="submitBarcode">
                 Verify Barcode
             </button>
 
-            <button id="cancelScannerButton" class="cancel-button">
+            <button id="cancelScanner" class="cancel">
                 Cancel
             </button>
         </div>
 
     </section>
 
-    <!-- PASSWORD SECTION -->
+    <!-- PASSWORD -->
     <section id="passwordSection" class="hidden">
 
         <div class="step">
-            <h2>02 — Password Verification</h2>
+            <h2>02 — Password</h2>
 
-            <p class="success">
-                Barcode accepted.
-            </p>
+            <p class="success">Barcode accepted.</p>
 
             <p class="details">
-                Enter your examination password to begin.
+                Enter your examination password.
             </p>
 
             <input
@@ -232,39 +189,33 @@ video {
                 autocomplete="off"
             >
 
-            <button id="confirmPasswordButton">
+            <button id="confirmPassword">
                 Confirm Password
             </button>
 
-            <button id="cancelPasswordButton" class="cancel-button">
+            <button id="cancelPassword" class="cancel">
                 Cancel
             </button>
         </div>
 
     </section>
 
-    <!-- EXAM SECTION -->
+    <!-- EXAM -->
     <section id="examSection" class="hidden">
 
         <div class="step">
             <h2>Examination in Progress</h2>
 
-            <p class="details">
-                Your examination has started.
-            </p>
-
             <div id="timer">90:00</div>
 
-            <p class="details">
-                TIME REMAINING
-            </p>
+            <p class="details">TIME REMAINING</p>
 
-            <div class="details">
+            <p class="details">
                 Duration: 1 hour 30 minutes<br>
                 Barcode: Houst-Gregorczyk-1110
-            </div>
+            </p>
 
-            <button id="cancelExamButton" class="cancel-button">
+            <button id="cancelExam" class="cancel">
                 Cancel Examination
             </button>
         </div>
@@ -275,111 +226,120 @@ video {
         Waiting for barcode.
     </div>
 
-    <div class="footer">
-        GCSE EXAMINATION SYSTEM
-    </div>
+    <div class="footer">GCSE EXAMINATION SYSTEM</div>
 
 </div>
 
 <script>
 
-// ======================================
-// EXAMINATION SETTINGS
-// ======================================
-
+// SETTINGS
 const ACCEPTED_CODE = "Houst-Gregorczyk-1110";
 const EXAM_PASSWORD = "1110HoustGreg";
 const EXAM_DURATION = 90 * 60 * 1000;
 
+// VARIABLES
+let scanner = null;
+let scanning = false;
 let pendingCode = null;
 let timerInterval = null;
-let codeReader = null;
 
-// ======================================
 // ELEMENTS
-// ======================================
-
 const scannerSection = document.getElementById("scannerSection");
 const passwordSection = document.getElementById("passwordSection");
 const examSection = document.getElementById("examSection");
-
-const barcodeInput = document.getElementById("barcodeInput");
-const passwordInput = document.getElementById("passwordInput");
-
-const timerDisplay = document.getElementById("timer");
 const statusBox = document.getElementById("status");
-
-// ======================================
-// STATUS MESSAGE
-// ======================================
+const timerDisplay = document.getElementById("timer");
 
 function setStatus(message, type = "") {
     statusBox.textContent = message;
     statusBox.className = "status " + type;
 }
 
-// ======================================
-// CAMERA SCANNER
-// ======================================
-
+// BARCODE SCANNER
 async function startScanner() {
 
-    if (!window.ZXing) {
-        setStatus(
-            "Scanner library unavailable. Check your internet connection.",
-            "error"
-        );
-        return;
-    }
+    if (scanning) return;
 
     try {
 
-        if (!codeReader) {
-            codeReader = new ZXing.BrowserMultiFormatReader();
+        if (!window.Html5Qrcode) {
+            setStatus("Scanner library failed to load. Check your internet connection.", "error");
+            return;
         }
 
-        setStatus("Starting camera...");
+        const formats = [
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.CODE_39,
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.ITF,
+            Html5QrcodeSupportedFormats.CODABAR
+        ];
 
-        await codeReader.decodeFromVideoDevice(
-            undefined,
-            "video",
-            (result, error) => {
+        scanner = new Html5Qrcode("reader", {
+            formatsToSupport: formats,
+            verbose: false
+        });
 
-                if (result && scannerSection.classList.contains("hidden") === false) {
+        setStatus("Requesting camera access...");
 
-                    const scannedCode = result.getText();
+        await scanner.start(
+            { facingMode: "environment" },
+            {
+                fps: 12,
+                qrbox: {
+                    width: 350,
+                    height: 120
+                },
+                aspectRatio: 1.5
+            },
+            (decodedText) => {
 
-                    stopScanner();
+                if (!scanning) return;
 
-                    verifyBarcode(scannedCode);
-                }
+                stopScanner();
+                verifyBarcode(decodedText.trim());
 
+            },
+            () => {
+                // Ignore individual unsuccessful scan frames.
             }
         );
 
+        scanning = true;
+        setStatus("Camera active. Scan your barcode.", "success");
+
     } catch (error) {
 
+        scanning = false;
+
         setStatus(
-            "Camera unavailable. Allow camera access or enter the barcode manually.",
+            "CAMERA ERROR: " + (error.message || error) +
+            ". Check camera permission and use HTTPS or localhost.",
             "error"
         );
 
     }
 }
 
-function stopScanner() {
+async function stopScanner() {
 
-    if (codeReader) {
-        codeReader.reset();
-        codeReader = null;
+    if (scanner && scanning) {
+
+        try {
+            await scanner.stop();
+            await scanner.clear();
+        } catch (error) {
+            console.log("Camera stop:", error);
+        }
+
     }
 
+    scanner = null;
+    scanning = false;
 }
 
-// ======================================
 // BARCODE VERIFICATION
-// ======================================
-
 function verifyBarcode(code) {
 
     if (code !== ACCEPTED_CODE) {
@@ -387,7 +347,7 @@ function verifyBarcode(code) {
         pendingCode = null;
 
         setStatus(
-            "ACCESS DENIED — Barcode not recognised.",
+            "ACCESS DENIED — Barcode not accepted.",
             "error"
         );
 
@@ -399,98 +359,68 @@ function verifyBarcode(code) {
     scannerSection.classList.add("hidden");
     passwordSection.classList.remove("hidden");
 
-    passwordInput.value = "";
-    passwordInput.focus();
+    document.getElementById("passwordInput").value = "";
+    document.getElementById("passwordInput").focus();
 
-    setStatus(
-        "Barcode accepted. Password verification required.",
-        "success"
-    );
-
+    setStatus("Barcode accepted. Password required.", "success");
 }
 
-// ======================================
 // PASSWORD VERIFICATION
-// ======================================
-
 function verifyPassword() {
 
     if (pendingCode !== ACCEPTED_CODE) {
-
-        setStatus(
-            "Please scan the accepted barcode first.",
-            "error"
-        );
-
+        setStatus("Scan the accepted barcode first.", "error");
         return;
     }
 
-    if (passwordInput.value !== EXAM_PASSWORD) {
+    const entered = document.getElementById("passwordInput").value;
 
-        passwordInput.value = "";
+    if (entered !== EXAM_PASSWORD) {
 
-        setStatus(
-            "INCORRECT PASSWORD — Access denied.",
-            "error"
-        );
+        document.getElementById("passwordInput").value = "";
 
-        passwordInput.focus();
+        setStatus("INCORRECT PASSWORD — Access denied.", "error");
 
         return;
     }
 
     beginExam();
-
 }
 
-// ======================================
-// START EXAMINATION
-// ======================================
-
+// START EXAM
 function beginExam() {
 
-    const startTime = Date.now();
-    const endTime = startTime + EXAM_DURATION;
+    const start = Date.now();
+    const end = start + EXAM_DURATION;
 
     localStorage.setItem("gcseExamCode", ACCEPTED_CODE);
-    localStorage.setItem("gcseExamStart", String(startTime));
-    localStorage.setItem("gcseExamEnd", String(endTime));
+    localStorage.setItem("gcseExamStart", String(start));
+    localStorage.setItem("gcseExamEnd", String(end));
 
     pendingCode = null;
 
     passwordSection.classList.add("hidden");
-    scannerSection.classList.add("hidden");
     examSection.classList.remove("hidden");
 
-    setStatus(
-        "ACCESS GRANTED — Examination started.",
-        "success"
-    );
+    setStatus("ACCESS GRANTED — Examination started.", "success");
 
     updateTimer();
 
     timerInterval = setInterval(updateTimer, 1000);
-
 }
 
-// ======================================
-// COUNTDOWN
-// ======================================
-
+// TIMER
 function updateTimer() {
 
-    const endTime = Number(
-        localStorage.getItem("gcseExamEnd")
-    );
+    const end = Number(localStorage.getItem("gcseExamEnd"));
 
-    if (!endTime) return;
+    if (!end) return;
 
-    const remaining = Math.max(0, endTime - Date.now());
+    const remaining = Math.max(0, end - Date.now());
+    const secondsLeft = Math.ceil(remaining / 1000);
 
-    const totalSeconds = Math.ceil(remaining / 1000);
-
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
+    const minutes = Math.floor(secondsLeft / 60);
+    const seconds = secondsLeft % 60;
 
     timerDisplay.textContent =
         String(minutes).padStart(2, "0") +
@@ -503,102 +433,66 @@ function updateTimer() {
         timerInterval = null;
 
         timerDisplay.textContent = "00:00";
-        timerDisplay.classList.add("finished");
 
-        setStatus(
-            "TIME'S UP — Examination finished.",
-            "error"
-        );
+        setStatus("TIME'S UP — Examination finished.", "error");
 
     }
-
 }
 
-// ======================================
-// CANCEL EXAMINATION
-// ======================================
+// CANCEL
+async function cancelExam() {
 
-function cancelExam() {
+    if (!confirm("Are you sure you want to cancel the examination?")) {
+        return;
+    }
 
-    const confirmed = window.confirm(
-        "Are you sure you want to cancel? Your examination session will be cleared."
-    );
-
-    if (!confirmed) return;
-
-    // Stop countdown
-    if (timerInterval !== null) {
+    if (timerInterval) {
         clearInterval(timerInterval);
         timerInterval = null;
     }
 
-    // Stop camera
-    stopScanner();
+    await stopScanner();
 
-    // Clear stored exam
     localStorage.removeItem("gcseExamCode");
     localStorage.removeItem("gcseExamStart");
     localStorage.removeItem("gcseExamEnd");
 
-    // Clear temporary data
     pendingCode = null;
 
-    barcodeInput.value = "";
-    passwordInput.value = "";
+    document.getElementById("barcodeInput").value = "";
+    document.getElementById("passwordInput").value = "";
 
-    // Reset timer display
     timerDisplay.textContent = "90:00";
-    timerDisplay.classList.remove("finished");
 
-    // Return to barcode stage
     examSection.classList.add("hidden");
     passwordSection.classList.add("hidden");
     scannerSection.classList.remove("hidden");
 
-    setStatus(
-        "EXAM CANCELLED — Ready for a new examination.",
-        "success"
-    );
-
+    setStatus("EXAM CANCELLED — Ready to scan again.", "success");
 }
 
-// ======================================
-// CANCEL BEFORE EXAM STARTS
-// ======================================
+async function cancelBeforeExam() {
 
-function cancelBeforeExam() {
-
-    stopScanner();
+    await stopScanner();
 
     pendingCode = null;
 
-    barcodeInput.value = "";
-    passwordInput.value = "";
+    document.getElementById("barcodeInput").value = "";
+    document.getElementById("passwordInput").value = "";
 
     passwordSection.classList.add("hidden");
     scannerSection.classList.remove("hidden");
 
-    setStatus(
-        "Cancelled. Ready to scan again."
-    );
-
+    setStatus("Cancelled. Ready for barcode scan.");
 }
 
-// ======================================
-// RESTORE AFTER PAGE REFRESH
-// ======================================
-
+// RESTORE TIMER
 function restoreExam() {
 
-    const savedCode = localStorage.getItem("gcseExamCode");
-    const savedEnd = Number(
-        localStorage.getItem("gcseExamEnd")
-    );
+    const code = localStorage.getItem("gcseExamCode");
+    const end = Number(localStorage.getItem("gcseExamEnd"));
 
-    if (
-        savedCode === ACCEPTED_CODE &&
-        savedEnd > 0
-    ) {
+    if (code === ACCEPTED_CODE && end > 0) {
 
         scannerSection.classList.add("hidden");
         passwordSection.classList.add("hidden");
@@ -606,60 +500,40 @@ function restoreExam() {
 
         updateTimer();
 
-        if (savedEnd > Date.now()) {
-
-            timerInterval = setInterval(
-                updateTimer,
-                1000
-            );
-
+        if (end > Date.now()) {
+            timerInterval = setInterval(updateTimer, 1000);
         }
-
     }
-
 }
 
-// ======================================
-// BUTTON EVENTS
-// ======================================
+// BUTTONS
+document.getElementById("startButton").onclick = startScanner;
+document.getElementById("stopButton").onclick = stopScanner;
 
-document.getElementById("startCameraButton")
-    .addEventListener("click", startScanner);
+document.getElementById("submitBarcode").onclick = () => {
+    verifyBarcode(document.getElementById("barcodeInput").value.trim());
+};
 
-document.getElementById("stopCameraButton")
-    .addEventListener("click", stopScanner);
+document.getElementById("confirmPassword").onclick = verifyPassword;
 
-document.getElementById("submitBarcodeButton")
-    .addEventListener("click", () => {
-        verifyBarcode(barcodeInput.value.trim());
-    });
+document.getElementById("cancelScanner").onclick = cancelBeforeExam;
+document.getElementById("cancelPassword").onclick = cancelBeforeExam;
+document.getElementById("cancelExam").onclick = cancelExam;
 
-document.getElementById("confirmPasswordButton")
-    .addEventListener("click", verifyPassword);
-
-document.getElementById("cancelScannerButton")
-    .addEventListener("click", cancelBeforeExam);
-
-document.getElementById("cancelPasswordButton")
-    .addEventListener("click", cancelBeforeExam);
-
-document.getElementById("cancelExamButton")
-    .addEventListener("click", cancelExam);
-
-// Allow Enter key to submit
-barcodeInput.addEventListener("keydown", event => {
+// ENTER KEY
+document.getElementById("barcodeInput").addEventListener("keydown", event => {
     if (event.key === "Enter") {
-        verifyBarcode(barcodeInput.value.trim());
+        verifyBarcode(event.target.value.trim());
     }
 });
 
-passwordInput.addEventListener("keydown", event => {
+document.getElementById("passwordInput").addEventListener("keydown", event => {
     if (event.key === "Enter") {
         verifyPassword();
     }
 });
 
-// Start up
+// STARTUP
 restoreExam();
 
 </script>
