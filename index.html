@@ -1,14 +1,27 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GCSE Exam Scanner</title>
-
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
+:root {
+    --bg: #101827;
+    --card: #1d2b40;
+    --panel: #263951;
+    --panel2: #293b53;
+    --border: #52647c;
+    --text: #ffffff;
+    --muted: #aebdd0;
+    --blue: #2878ed;
+    --timer: #69a8ff;
+    --green: #62e6a0;
+    --red: #ff8585;
+    --amber: #ffc857;
+}
+
 * { box-sizing: border-box; }
 
 body {
@@ -18,26 +31,27 @@ body {
     align-items: center;
     justify-content: center;
     padding: 20px;
-    background: #101827;
-    color: white;
-    font-family: Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
 }
 
 .container {
     width: 100%;
     max-width: 540px;
     padding: 30px;
-    background: #1d2b40;
+    background: var(--card);
     border-radius: 18px;
     text-align: center;
     box-shadow: 0 12px 35px #0006;
 }
 
-h1 { margin-bottom: 5px; }
-.subtitle { color: #aebdd0; }
+h1 { margin: 0 0 5px; }
+h2 { margin-top: 0; }
+.subtitle { color: var(--muted); margin-top: 0; }
 
 .step {
-    background: #263951;
+    background: var(--panel);
     padding: 20px;
     border-radius: 12px;
     margin-top: 20px;
@@ -47,11 +61,16 @@ input {
     width: 100%;
     padding: 14px;
     margin-top: 12px;
-    border: 1px solid #52647c;
+    border: 1px solid var(--border);
     border-radius: 9px;
-    background: #101827;
-    color: white;
+    background: var(--bg);
+    color: var(--text);
     font-size: 16px;
+}
+
+input:focus-visible, button:focus-visible {
+    outline: 3px solid var(--timer);
+    outline-offset: 2px;
 }
 
 button {
@@ -60,22 +79,40 @@ button {
     margin-top: 12px;
     border: none;
     border-radius: 9px;
-    background: #2878ed;
-    color: white;
+    background: var(--blue);
+    color: var(--text);
     font-size: 15px;
     font-weight: bold;
     cursor: pointer;
+    transition: filter .15s, transform .05s;
 }
 
-button:hover { filter: brightness(1.12); }
+button:hover:not(:disabled) { filter: brightness(1.12); }
+button:active:not(:disabled) { transform: scale(.99); }
+button:disabled { opacity: .5; cursor: not-allowed; }
 
-.cancel {
-    background: #c43e48;
-}
+.cancel { background: #c43e48; }
+.secondary { background: #465a73; }
 
-.secondary {
-    background: #465a73;
+/* Selection buttons (school / board / subject / paper) */
+.choice {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
 }
+.choice small {
+    font-weight: normal;
+    font-size: 12px;
+    color: #dbe6f5;
+    white-space: nowrap;
+}
+.choice:disabled { background: #36475e; }
+.choice:disabled small { color: var(--amber); }
+
+.row { display: flex; gap: 10px; }
+.row button { margin-top: 12px; }
 
 .hidden { display: none !important; }
 
@@ -85,35 +122,81 @@ button:hover { filter: brightness(1.12); }
     overflow: hidden;
     border-radius: 10px;
 }
-
-#reader video {
-    border-radius: 10px;
-}
+#reader:empty { display: none; }
+#reader video { border-radius: 10px; }
 
 #timer {
     font-size: 65px;
     font-weight: bold;
-    color: #69a8ff;
-    margin: 25px 0;
+    color: var(--timer);
+    margin: 20px 0 10px;
     font-variant-numeric: tabular-nums;
+    transition: color .3s;
 }
+#timer.warn { color: var(--amber); }
+#timer.danger { color: var(--red); animation: pulse 1s infinite; }
+
+@keyframes pulse { 50% { opacity: .55; } }
+
+.progress {
+    height: 10px;
+    background: var(--bg);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+#progressBar {
+    height: 100%;
+    width: 100%;
+    background: var(--timer);
+    border-radius: 99px;
+    transition: width .5s linear, background .3s;
+}
+#progressBar.warn { background: var(--amber); }
+#progressBar.danger { background: var(--red); }
 
 .status {
     margin-top: 18px;
     padding: 13px;
-    background: #293b53;
+    background: var(--panel2);
     border-radius: 9px;
     overflow-wrap: anywhere;
     font-size: 14px;
 }
 
-.success { color: #62e6a0; }
-.error { color: #ff8585; }
+.success { color: var(--green); }
+.error { color: var(--red); }
+.warning { color: var(--amber); }
 
 .details {
-    color: #aebdd0;
+    color: var(--muted);
     font-size: 13px;
     line-height: 1.7;
+}
+
+.candidate {
+    display: inline-block;
+    padding: 6px 14px;
+    margin: 6px 0;
+    background: var(--bg);
+    border-radius: 99px;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 12px;
+    margin: 16px 0 0;
+}
+.divider::before, .divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
 }
 
 .footer {
@@ -121,421 +204,1031 @@ button:hover { filter: brightness(1.12); }
     font-size: 12px;
     margin-top: 25px;
 }
+
+/* Supervisor password dialog (replaces the browser prompt, which some
+   browsers block) */
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: #000a;
+}
+.modal-box {
+    width: 100%;
+    max-width: 380px;
+    padding: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    text-align: center;
+}
+.modal-box h3 { margin: 0 0 6px; }
+.modal-error { min-height: 20px; margin: 10px 0 0; font-size: 13px; color: var(--red); }
+
+@media (max-width: 420px) {
+    .container { padding: 20px; }
+    #timer { font-size: 52px; }
+}
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<main class="container">
 
     <h1>GCSE Exam Scanner</h1>
     <p class="subtitle">Examination access system</p>
 
-    <!-- BARCODE -->
-    <section id="scannerSection">
-
+    <!-- STEP 1: SCHOOL -->
+    <section id="schoolSection">
         <div class="step">
-            <h2>01 — Scan Barcode</h2>
+            <h2>01 — Choose Your School</h2>
+            <p class="details">Select your school to continue.</p>
+            <div id="schoolList"></div>
+        </div>
+    </section>
 
-            <p class="details">
-                Position your barcode inside the camera frame.
-            </p>
+    <!-- STEP 2: EXAM BOARD -->
+    <section id="boardSection" class="hidden">
+        <div class="step">
+            <h2>02 — Exam Board</h2>
+            <p class="details">Select your exam board.</p>
+            <div id="boardList"></div>
+            <button id="backToSchool" class="secondary">Back</button>
+        </div>
+    </section>
+
+    <!-- STEP 3: SUBJECT -->
+    <section id="subjectSection" class="hidden">
+        <div class="step">
+            <h2>03 — Subject</h2>
+            <p class="details">Select your subject.</p>
+            <div id="subjectList"></div>
+            <button id="backToBoard" class="secondary">Back</button>
+        </div>
+    </section>
+
+    <!-- STEP 4: PAPER -->
+    <section id="paperSection" class="hidden">
+        <div class="step">
+            <h2>04 — Paper</h2>
+            <p class="details" id="paperSubjectName"></p>
+            <div id="paperList"></div>
+            <button id="backToSubject" class="secondary">Back</button>
+        </div>
+    </section>
+
+    <!-- STEP 5: BARCODE -->
+    <section id="scannerSection" class="hidden">
+        <div class="step">
+            <h2>05 — Scan Barcode</h2>
+            <div class="candidate" id="selectionBadge"></div>
+            <p class="details">Position your barcode inside the camera frame.</p>
 
             <div id="reader"></div>
 
-            <button id="startButton">
-                Start Barcode Scanner
-            </button>
+            <div class="row">
+                <button id="startButton">Start Scanner</button>
+                <button id="stopButton" class="secondary" disabled>Stop Camera</button>
+            </div>
 
-            <button id="stopButton" class="secondary">
-                Stop Camera
-            </button>
+            <div class="divider">or enter it manually</div>
 
-            <p class="details">Manual barcode entry</p>
+            <input id="barcodeInput" placeholder="Enter barcode" autocomplete="off"
+                   autocapitalize="off" spellcheck="false" aria-label="Barcode">
 
-            <input
-                id="barcodeInput"
-                placeholder="Enter barcode"
-                autocomplete="off"
-            >
-
-            <button id="submitBarcode">
-                Verify Barcode
-            </button>
-
-            <button id="cancelScanner" class="cancel">
-                Cancel
-            </button>
+            <button id="submitBarcode">Verify Barcode</button>
+            <button id="backToPaper" class="secondary">Back</button>
         </div>
-
     </section>
 
-    <!-- PASSWORD -->
+    <!-- STEP 6: PASSWORD -->
     <section id="passwordSection" class="hidden">
-
         <div class="step">
-            <h2>02 — Password</h2>
-
+            <h2>06 — Password</h2>
             <p class="success">Barcode accepted.</p>
+            <div class="candidate" id="candidateName"></div>
+            <p class="details">Enter your examination password.</p>
 
-            <p class="details">
-                Enter your examination password.
-            </p>
+            <input id="passwordInput" type="password" placeholder="Enter password"
+                   autocomplete="off" aria-label="Password">
 
-            <input
-                id="passwordInput"
-                type="password"
-                placeholder="Enter password"
-                autocomplete="off"
-            >
-
-            <button id="confirmPassword">
-                Confirm Password
-            </button>
-
-            <button id="cancelPassword" class="cancel">
-                Cancel
-            </button>
+            <button id="confirmPassword">Confirm Password</button>
+            <button id="cancelPassword" class="cancel">Back</button>
         </div>
-
     </section>
 
     <!-- EXAM -->
     <section id="examSection" class="hidden">
-
         <div class="step">
-            <h2>Examination in Progress</h2>
+            <h2 id="examTitle">Examination in Progress</h2>
 
-            <div id="timer">90:00</div>
+            <div class="candidate" id="examCandidate"></div>
+            <p class="details" id="examPaper" style="margin:6px 0 0"></p>
+
+            <div id="timer" role="timer" aria-live="off">00:00</div>
+            <div class="progress"><div id="progressBar"></div></div>
 
             <p class="details">TIME REMAINING</p>
 
-            <p class="details">
-                Duration: 1 hour 30 minutes<br>
-                Barcode: Houst-Gregorczyk-1110
-            </p>
+            <p class="details" id="examDetails"></p>
 
-            <button id="cancelExam" class="cancel">
-                Cancel Examination
-            </button>
+            <div class="row">
+                <button id="fullscreenButton" class="secondary">Fullscreen</button>
+                <button id="cancelExam" class="cancel">End Exam</button>
+            </div>
+
+            <button id="resetButton" class="hidden">Start New Session</button>
         </div>
-
     </section>
 
-    <div id="status" class="status">
-        Waiting for barcode.
-    </div>
+    <div id="status" class="status" role="status" aria-live="polite">Choose your school to begin.</div>
 
     <div class="footer">GCSE EXAMINATION SYSTEM</div>
 
+</main>
+
+<!-- Supervisor password dialog -->
+<div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-box">
+        <h3 id="modalTitle">Supervisor password</h3>
+        <p class="details" id="modalText"></p>
+        <input id="modalInput" type="password" placeholder="Supervisor password"
+               autocomplete="off" aria-label="Supervisor password">
+        <p class="modal-error" id="modalError" role="alert"></p>
+        <div class="row">
+            <button id="modalOk">Confirm</button>
+            <button id="modalCancel" class="secondary">Cancel</button>
+        </div>
+    </div>
 </div>
 
 <script>
+// ============================================================
+// SETTINGS — edit these
+// ============================================================
 
-// SETTINGS
-const ACCEPTED_CODE = "Houst-Gregorczyk-1110";
-const EXAM_PASSWORD = "1110HoustGreg";
-const EXAM_DURATION = 90 * 60 * 1000;
+// Helper for the three modern foreign language GCSEs (Higher tier papers)
+const languagePapers = [
+    { name: "Paper 2: Listening (Higher)", minutes: 60 },
+    { name: "Paper 3: Reading (Higher)",   minutes: 60 },
+    { name: "Paper 4: Writing (Higher)",   minutes: 80 }
+];
 
-// VARIABLES
+const CONFIG = {
+    // Schools shown on the first screen. Add more here later.
+    schools: [
+        { id: "houstone", name: "Houstone" }
+    ],
+
+    // Exam boards. Only "available" boards can be selected.
+    boards: [
+        { id: "edexcel", name: "Edexcel",       available: true  },
+        { id: "aqa",     name: "AQA",           available: false },
+        { id: "ocr",     name: "OCR",           available: false },
+        { id: "eduqas",  name: "Eduqas (WJEC)", available: false }
+    ],
+
+    // Subjects and paper lengths (in minutes) for each board.
+    subjects: {
+        edexcel: [
+            { id: "maths", name: "Mathematics", papers: [
+                { name: "Paper 1: Non-Calculator", minutes: 90 },
+                { name: "Paper 2: Calculator",     minutes: 90 },
+                { name: "Paper 3: Calculator",     minutes: 90 }
+            ]},
+            { id: "englang", name: "English Language", papers: [
+                { name: "Paper 1: Fiction and Imaginative Writing",        minutes: 105 },
+                { name: "Paper 2: Non-Fiction and Transactional Writing",  minutes: 125 }
+            ]},
+            { id: "englit", name: "English Literature", papers: [
+                { name: "Paper 1: Shakespeare and Post-1914 Literature",      minutes: 105 },
+                { name: "Paper 2: 19th Century Novel and Poetry since 1789",  minutes: 135 }
+            ]},
+            { id: "biology", name: "Biology", papers: [
+                { name: "Paper 1", minutes: 105 },
+                { name: "Paper 2", minutes: 105 }
+            ]},
+            { id: "chemistry", name: "Chemistry", papers: [
+                { name: "Paper 1", minutes: 105 },
+                { name: "Paper 2", minutes: 105 }
+            ]},
+            { id: "physics", name: "Physics", papers: [
+                { name: "Paper 1", minutes: 105 },
+                { name: "Paper 2", minutes: 105 }
+            ]},
+            { id: "combsci", name: "Combined Science", papers: [
+                { name: "Paper 1: Biology 1",   minutes: 70 },
+                { name: "Paper 2: Chemistry 1", minutes: 70 },
+                { name: "Paper 3: Physics 1",   minutes: 70 },
+                { name: "Paper 4: Biology 2",   minutes: 70 },
+                { name: "Paper 5: Chemistry 2", minutes: 70 },
+                { name: "Paper 6: Physics 2",   minutes: 70 }
+            ]},
+            { id: "geography", name: "Geography (A)", papers: [
+                { name: "Paper 1: The Physical Environment",                 minutes: 105 },
+                { name: "Paper 2: The Human Environment",                    minutes: 90 },
+                { name: "Paper 3: Geographical Investigations",              minutes: 90 }
+            ]},
+            { id: "history", name: "History", papers: [
+                { name: "Paper 1: Thematic Study and Historic Environment",  minutes: 80 },
+                { name: "Paper 2: Period Study and British Depth Study",     minutes: 110 },
+                { name: "Paper 3: Modern Depth Study",                       minutes: 90 }
+            ]},
+            { id: "compsci", name: "Computer Science", papers: [
+                { name: "Paper 1: Principles of Computer Science",           minutes: 90 },
+                { name: "Paper 2: Application of Computational Thinking",    minutes: 120 }
+            ]},
+            { id: "business", name: "Business", papers: [
+                { name: "Paper 1: Investigating Small Business", minutes: 105 },
+                { name: "Paper 2: Building a Business",          minutes: 105 }
+            ]},
+            { id: "psychology", name: "Psychology", papers: [
+                { name: "Paper 1", minutes: 105 },
+                { name: "Paper 2", minutes: 80 }
+            ]},
+            { id: "citizenship", name: "Citizenship Studies", papers: [
+                { name: "Paper 1", minutes: 105 },
+                { name: "Paper 2", minutes: 105 }
+            ]},
+            { id: "rs", name: "Religious Studies A", papers: [
+                { name: "Paper 1: Study of Religion",       minutes: 105 },
+                { name: "Paper 2: Study of Second Religion", minutes: 50 },
+                { name: "Paper 3: Philosophy and Ethics",   minutes: 50 },
+                { name: "Paper 4: Textual Studies",         minutes: 50 }
+            ]},
+            { id: "french",  name: "French",  papers: languagePapers },
+            { id: "spanish", name: "Spanish", papers: languagePapers },
+            { id: "german",  name: "German",  papers: languagePapers }
+        ]
+    },
+
+    // Add one entry per candidate. "school" must match a school id above.
+    // "extraTimePercent" is optional (e.g. 25 = 25% extra time).
+    candidates: [
+        {
+            school: "houstone",
+            name: "Houst Gregorczyk",
+            barcode: "Houst-Gregorczyk-1110",
+            password: "1110HoustGreg",
+            extraTimePercent: 0
+        }
+    ],
+
+    // Needed to end an exam early or reset after it finishes.
+    // CHANGE THIS. (Candidates should not know it.)
+    supervisorPassword: "1110HoustGreg",
+
+    warnAtMinutes: [15, 5],   // warning beeps/colours
+    maxAttempts: 5,           // wrong attempts before lockout
+    lockoutSeconds: 30
+};
+
+const STORAGE_KEY = "gcseExamState";
+
+// ============================================================
+// STATE
+// ============================================================
 let scanner = null;
 let scanning = false;
-let pendingCode = null;
+let pendingCandidate = null;
 let timerInterval = null;
+let wakeLock = null;
+let audioCtx = null;
+let failedAttempts = 0;
+let lockedUntil = 0;
+let warned = new Set();
 
+// What the candidate has picked so far
+let selection = { school: null, board: null, subject: null, paper: null };
+
+// ============================================================
 // ELEMENTS
-const scannerSection = document.getElementById("scannerSection");
-const passwordSection = document.getElementById("passwordSection");
-const examSection = document.getElementById("examSection");
-const statusBox = document.getElementById("status");
-const timerDisplay = document.getElementById("timer");
+// ============================================================
+const $ = id => document.getElementById(id);
 
+const sections = {
+    school:   $("schoolSection"),
+    board:    $("boardSection"),
+    subject:  $("subjectSection"),
+    paper:    $("paperSection"),
+    scanner:  $("scannerSection"),
+    password: $("passwordSection"),
+    exam:     $("examSection")
+};
+
+const statusBox    = $("status");
+const timerDisplay = $("timer");
+const progressBar  = $("progressBar");
+const startButton  = $("startButton");
+const stopButton   = $("stopButton");
+
+// ============================================================
+// HELPERS
+// ============================================================
 function setStatus(message, type = "") {
     statusBox.textContent = message;
     statusBox.className = "status " + type;
 }
 
-// BARCODE SCANNER
-async function startScanner() {
+function show(name) {
+    for (const [key, el] of Object.entries(sections)) {
+        el.classList.toggle("hidden", key !== name);
+    }
+}
 
-    if (scanning) return;
+function loadState() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); }
+    catch { return null; }
+}
+
+function saveState(state) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function clearState() {
+    localStorage.removeItem(STORAGE_KEY);
+}
+
+function formatTime(ms) {
+    const total = Math.max(0, Math.ceil(ms / 1000));
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+}
+
+function formatDuration(minutes) {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    const parts = [];
+    if (h) parts.push(`${h} hour${h === 1 ? "" : "s"}`);
+    if (m) parts.push(`${m} minute${m === 1 ? "" : "s"}`);
+    return parts.join(" ") || "0 minutes";
+}
+
+function shortDuration(minutes) {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return (h ? h + "h " : "") + (m ? m + "m" : "").trim() || "0m";
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function findSchool(id) { return CONFIG.schools.find(s => s.id === id) || null; }
+function findBoard(id)  { return CONFIG.boards.find(b => b.id === id) || null; }
+
+// Only matches candidates belonging to the chosen school
+function findCandidate(barcode) {
+    return CONFIG.candidates.find(
+        c => c.barcode === barcode && c.school === selection.school
+    ) || null;
+}
+
+function extraMinutes(candidate, baseMinutes) {
+    const pct = candidate.extraTimePercent || 0;
+    return Math.round(baseMinutes * (1 + pct / 100));
+}
+
+function selectionSummary() {
+    const school = findSchool(selection.school);
+    const board = findBoard(selection.board);
+    if (!school || !board || !selection.subject || !selection.paper) return "";
+    return `${school.name} · ${board.name} · ${selection.subject.name}`;
+}
+
+// Lockout after too many wrong attempts
+function isLocked() {
+    const remaining = lockedUntil - Date.now();
+    if (remaining > 0) {
+        setStatus(
+            `TOO MANY ATTEMPTS — Try again in ${Math.ceil(remaining / 1000)}s.`,
+            "error"
+        );
+        return true;
+    }
+    return false;
+}
+
+function registerFailure() {
+    failedAttempts++;
+    if (failedAttempts >= CONFIG.maxAttempts) {
+        failedAttempts = 0;
+        lockedUntil = Date.now() + CONFIG.lockoutSeconds * 1000;
+        return true;
+    }
+    return false;
+}
+
+// ============================================================
+// SELECTION STEPS: school -> board -> subject -> paper
+// ============================================================
+function addChoice(container, label, sub, onClick, disabled = false) {
+    const btn = document.createElement("button");
+    btn.className = "choice";
+    btn.disabled = disabled;
+
+    const name = document.createElement("span");
+    name.textContent = label;
+    btn.appendChild(name);
+
+    if (sub) {
+        const small = document.createElement("small");
+        small.textContent = sub;
+        btn.appendChild(small);
+    }
+
+    if (!disabled) btn.onclick = onClick;
+    container.appendChild(btn);
+}
+
+function renderSchools() {
+    const list = $("schoolList");
+    list.innerHTML = "";
+    for (const school of CONFIG.schools) {
+        addChoice(list, school.name, "", () => chooseSchool(school.id));
+    }
+}
+
+function chooseSchool(id) {
+    const school = findSchool(id);
+    if (!school) return;
+    selection = { school: id, board: null, subject: null, paper: null };
+
+    const list = $("boardList");
+    list.innerHTML = "";
+    for (const board of CONFIG.boards) {
+        addChoice(
+            list,
+            board.name,
+            board.available ? "" : "Coming soon",
+            () => chooseBoard(board.id),
+            !board.available
+        );
+    }
+
+    show("board");
+    setStatus(`${school.name} selected. Choose your exam board.`);
+}
+
+function chooseBoard(id) {
+    const board = findBoard(id);
+    if (!board || !board.available) return;
+    selection.board = id;
+    selection.subject = null;
+    selection.paper = null;
+
+    const list = $("subjectList");
+    list.innerHTML = "";
+    for (const subject of (CONFIG.subjects[id] || [])) {
+        const n = subject.papers.length;
+        addChoice(list, subject.name, `${n} paper${n === 1 ? "" : "s"}`, () => chooseSubject(subject));
+    }
+
+    show("subject");
+    setStatus(`${board.name} selected. Choose your subject.`);
+}
+
+function chooseSubject(subject) {
+    selection.subject = subject;
+    selection.paper = null;
+
+    $("paperSubjectName").textContent = subject.name;
+
+    const list = $("paperList");
+    list.innerHTML = "";
+    for (const paper of subject.papers) {
+        addChoice(list, paper.name, shortDuration(paper.minutes), () => choosePaper(paper));
+    }
+
+    show("paper");
+    setStatus(`${subject.name} selected. Choose your paper.`);
+}
+
+function choosePaper(paper) {
+    selection.paper = paper;
+    $("selectionBadge").textContent = `${selectionSummary()} — ${paper.name}`;
+    $("barcodeInput").value = "";
+    show("scanner");
+    setStatus(`${paper.name} (${shortDuration(paper.minutes)}). Waiting for barcode.`);
+}
+
+async function goBack(to) {
+    await stopScanner(true);
+    pendingCandidate = null;
+    $("barcodeInput").value = "";
+    $("passwordInput").value = "";
+
+    if (to === "school") {
+        selection = { school: null, board: null, subject: null, paper: null };
+        show("school");
+        setStatus("Choose your school to begin.");
+    } else if (to === "board") {
+        chooseSchool(selection.school);
+    } else if (to === "subject") {
+        chooseBoard(selection.board);
+    } else if (to === "paper") {
+        chooseSubject(selection.subject);
+    }
+}
+
+// ============================================================
+// SOUND (beeps for warnings and end of exam)
+// ============================================================
+function prepareAudio() {
+    try {
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === "suspended") audioCtx.resume();
+    } catch { /* audio not available */ }
+}
+
+function beep(times = 1, freq = 880) {
+    if (!audioCtx) return;
+    for (let i = 0; i < times; i++) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const t = audioCtx.currentTime + i * 0.35;
+
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime(0.25, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.28);
+    }
+}
+
+// ============================================================
+// SCREEN WAKE LOCK (stops the phone sleeping mid-exam)
+// ============================================================
+async function keepAwake() {
+    try {
+        if ("wakeLock" in navigator) {
+            wakeLock = await navigator.wakeLock.request("screen");
+        }
+    } catch { /* not supported or denied */ }
+}
+
+function releaseAwake() {
+    if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
+}
+
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && timerInterval) keepAwake();
+});
+
+// ============================================================
+// SUPERVISOR PASSWORD DIALOG
+// ============================================================
+function askSupervisor(title, text) {
+    return new Promise(resolve => {
+        const modal = $("modal");
+        const input = $("modalInput");
+        const error = $("modalError");
+
+        $("modalTitle").textContent = title;
+        $("modalText").textContent = text;
+        input.value = "";
+        error.textContent = "";
+        modal.classList.remove("hidden");
+        input.focus();
+
+        const finish = ok => {
+            modal.classList.add("hidden");
+            input.value = "";
+            $("modalOk").onclick = null;
+            $("modalCancel").onclick = null;
+            input.onkeydown = null;
+            resolve(ok);
+        };
+
+        const submit = () => {
+            if (input.value === CONFIG.supervisorPassword) {
+                finish(true);
+            } else {
+                error.textContent = "Incorrect supervisor password.";
+                input.value = "";
+                input.focus();
+            }
+        };
+
+        $("modalOk").onclick = submit;
+        $("modalCancel").onclick = () => finish(false);
+        input.onkeydown = e => {
+            if (e.key === "Enter") submit();
+            if (e.key === "Escape") finish(false);
+        };
+    });
+}
+
+// ============================================================
+// BARCODE SCANNER
+// ============================================================
+async function startScanner() {
+    if (scanning || isLocked()) return;
+
+    if (!window.Html5Qrcode) {
+        setStatus("Scanner library failed to load. Check your internet connection or use manual entry.", "error");
+        return;
+    }
 
     try {
-
-        if (!window.Html5Qrcode) {
-            setStatus("Scanner library failed to load. Check your internet connection.", "error");
-            return;
-        }
-
-        const formats = [
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.CODE_39,
-            Html5QrcodeSupportedFormats.EAN_13,
-            Html5QrcodeSupportedFormats.EAN_8,
-            Html5QrcodeSupportedFormats.ITF,
-            Html5QrcodeSupportedFormats.CODABAR
-        ];
-
         scanner = new Html5Qrcode("reader", {
-            formatsToSupport: formats,
+            formatsToSupport: [
+                Html5QrcodeSupportedFormats.CODE_128,
+                Html5QrcodeSupportedFormats.CODE_39,
+                Html5QrcodeSupportedFormats.EAN_13,
+                Html5QrcodeSupportedFormats.EAN_8,
+                Html5QrcodeSupportedFormats.ITF,
+                Html5QrcodeSupportedFormats.CODABAR
+            ],
             verbose: false
         });
 
         setStatus("Requesting camera access...");
+        startButton.disabled = true;
 
         await scanner.start(
             { facingMode: "environment" },
             {
                 fps: 12,
-                qrbox: {
-                    width: 350,
-                    height: 120
-                },
+                // Scales to the screen so it never overflows on small phones
+                qrbox: (w, h) => ({
+                    width: Math.min(350, Math.floor(w * 0.9)),
+                    height: Math.min(120, Math.floor(h * 0.5))
+                }),
                 aspectRatio: 1.5
             },
-            (decodedText) => {
-
+            async decodedText => {
                 if (!scanning) return;
-
-                stopScanner();
+                scanning = false;               // stop repeat triggers immediately
+                await stopScanner(true);
                 verifyBarcode(decodedText.trim());
-
             },
-            () => {
-                // Ignore individual unsuccessful scan frames.
-            }
+            () => { /* ignore individual failed frames */ }
         );
 
         scanning = true;
+        stopButton.disabled = false;
         setStatus("Camera active. Scan your barcode.", "success");
 
     } catch (error) {
-
         scanning = false;
+        scanner = null;
+        startButton.disabled = false;
+        stopButton.disabled = true;
 
-        setStatus(
-            "CAMERA ERROR: " + (error.message || error) +
-            ". Check camera permission and use HTTPS or localhost.",
-            "error"
-        );
-
+        const name = error && error.name;
+        let msg;
+        if (name === "NotAllowedError" || /permission/i.test(String(error))) {
+            msg = "Camera permission was denied. Allow camera access in your browser, or enter the barcode manually.";
+        } else if (name === "NotFoundError") {
+            msg = "No camera found. Enter the barcode manually.";
+        } else {
+            msg = "Camera error: " + (error.message || error) +
+                  ". Use HTTPS or localhost, or enter the barcode manually.";
+        }
+        setStatus(msg, "error");
     }
 }
 
-async function stopScanner() {
+async function stopScanner(silent = false) {
+    const wasScanning = scanning;
+    scanning = false;
 
-    if (scanner && scanning) {
-
+    if (scanner) {
         try {
-            await scanner.stop();
+            if (wasScanning || scanner.getState?.() === 2) await scanner.stop();
             await scanner.clear();
         } catch (error) {
             console.log("Camera stop:", error);
         }
-
     }
 
     scanner = null;
-    scanning = false;
+    startButton.disabled = false;
+    stopButton.disabled = true;
+
+    if (!silent && wasScanning) setStatus("Camera stopped.");
 }
 
+// ============================================================
 // BARCODE VERIFICATION
+// ============================================================
 function verifyBarcode(code) {
+    if (isLocked()) return;
 
-    if (code !== ACCEPTED_CODE) {
+    const candidate = findCandidate(code);
 
-        pendingCode = null;
-
+    if (!candidate) {
+        pendingCandidate = null;
+        const locked = registerFailure();
         setStatus(
-            "ACCESS DENIED — Barcode not accepted.",
+            locked
+                ? `ACCESS DENIED — Locked for ${CONFIG.lockoutSeconds}s.`
+                : "ACCESS DENIED — Barcode not accepted.",
             "error"
         );
-
         return;
     }
 
-    pendingCode = code;
+    failedAttempts = 0;
+    pendingCandidate = candidate;
 
-    scannerSection.classList.add("hidden");
-    passwordSection.classList.remove("hidden");
-
-    document.getElementById("passwordInput").value = "";
-    document.getElementById("passwordInput").focus();
+    $("candidateName").textContent = candidate.name;
+    $("passwordInput").value = "";
+    show("password");
+    $("passwordInput").focus();
 
     setStatus("Barcode accepted. Password required.", "success");
 }
 
+// ============================================================
 // PASSWORD VERIFICATION
+// ============================================================
 function verifyPassword() {
+    if (!pendingCandidate) {
+        setStatus("Scan your barcode first.", "error");
+        return;
+    }
+    if (isLocked()) return;
 
-    if (pendingCode !== ACCEPTED_CODE) {
-        setStatus("Scan the accepted barcode first.", "error");
+    const entered = $("passwordInput").value;
+
+    if (entered !== pendingCandidate.password) {
+        $("passwordInput").value = "";
+        const locked = registerFailure();
+        if (locked) {
+            // Send them back to the barcode step during lockout
+            pendingCandidate = null;
+            show("scanner");
+            setStatus(`TOO MANY ATTEMPTS — Locked for ${CONFIG.lockoutSeconds}s.`, "error");
+        } else {
+            const left = CONFIG.maxAttempts - failedAttempts;
+            setStatus(`INCORRECT PASSWORD — ${left} attempt${left === 1 ? "" : "s"} left.`, "error");
+        }
         return;
     }
 
-    const entered = document.getElementById("passwordInput").value;
-
-    if (entered !== EXAM_PASSWORD) {
-
-        document.getElementById("passwordInput").value = "";
-
-        setStatus("INCORRECT PASSWORD — Access denied.", "error");
-
-        return;
-    }
-
-    beginExam();
+    failedAttempts = 0;
+    beginExam(pendingCandidate);
 }
 
-// START EXAM
-function beginExam() {
-
+// ============================================================
+// EXAM
+// ============================================================
+function beginExam(candidate) {
     const start = Date.now();
-    const end = start + EXAM_DURATION;
+    const minutes = extraMinutes(candidate, selection.paper.minutes);
+    const duration = minutes * 60 * 1000;
 
-    localStorage.setItem("gcseExamCode", ACCEPTED_CODE);
-    localStorage.setItem("gcseExamStart", String(start));
-    localStorage.setItem("gcseExamEnd", String(end));
+    saveState({
+        school: selection.school,
+        board: selection.board,
+        barcode: candidate.barcode,
+        subjectName: selection.subject.name,
+        paperName: selection.paper.name,
+        baseMinutes: selection.paper.minutes,
+        minutes,
+        start,
+        end: start + duration,
+        duration,
+        finished: false
+    });
 
-    pendingCode = null;
+    pendingCandidate = null;
+    prepareAudio();       // must happen inside a click so later beeps are allowed
+    keepAwake();
 
-    passwordSection.classList.add("hidden");
-    examSection.classList.remove("hidden");
+    resumeExamView(loadState());
+    setStatus("ACCESS GRANTED — Examination started. Good luck!", "success");
+}
 
-    setStatus("ACCESS GRANTED — Examination started.", "success");
+function resumeExamView(state) {
+    selection.school = state.school;
+    selection.board = state.board;
 
+    const candidate = findCandidate(state.barcode);
+    if (!candidate) {
+        clearState();
+        selection = { school: null, board: null, subject: null, paper: null };
+        return;
+    }
+
+    const school = findSchool(state.school);
+    const board = findBoard(state.board);
+
+    warned = new Set();
+    $("examCandidate").textContent = candidate.name;
+    $("examPaper").textContent = `${state.subjectName} — ${state.paperName}`;
+    $("examTitle").textContent = "Examination in Progress";
+
+    const extra = state.minutes !== state.baseMinutes
+        ? ` (includes extra time; standard ${formatDuration(state.baseMinutes)})`
+        : "";
+
+    $("examDetails").innerHTML =
+        `School: ${escapeHtml(school ? school.name : "")}<br>` +
+        `Exam board: ${escapeHtml(board ? board.name : "")}<br>` +
+        `Duration: ${formatDuration(state.minutes)}${escapeHtml(extra)}<br>` +
+        `Barcode: ${escapeHtml(candidate.barcode)}`;
+
+    $("cancelExam").classList.remove("hidden");
+    $("fullscreenButton").classList.remove("hidden");
+    $("resetButton").classList.add("hidden");
+
+    show("exam");
     updateTimer();
 
-    timerInterval = setInterval(updateTimer, 1000);
-}
-
-// TIMER
-function updateTimer() {
-
-    const end = Number(localStorage.getItem("gcseExamEnd"));
-
-    if (!end) return;
-
-    const remaining = Math.max(0, end - Date.now());
-    const secondsLeft = Math.ceil(remaining / 1000);
-
-    const minutes = Math.floor(secondsLeft / 60);
-    const seconds = secondsLeft % 60;
-
-    timerDisplay.textContent =
-        String(minutes).padStart(2, "0") +
-        ":" +
-        String(seconds).padStart(2, "0");
-
-    if (remaining <= 0) {
-
-        clearInterval(timerInterval);
-        timerInterval = null;
-
-        timerDisplay.textContent = "00:00";
-
-        setStatus("TIME'S UP — Examination finished.", "error");
-
+    if (!state.finished && !timerInterval) {
+        timerInterval = setInterval(updateTimer, 250);
     }
 }
 
-// CANCEL
-async function cancelExam() {
+function updateTimer() {
+    const state = loadState();
+    if (!state) return;
 
-    if (!confirm("Are you sure you want to cancel the examination?")) {
+    const remaining = Math.max(0, state.end - Date.now());
+    const minsLeft = remaining / 60000;
+
+    timerDisplay.textContent = formatTime(remaining);
+    progressBar.style.width = (remaining / state.duration * 100) + "%";
+
+    // Colour stages
+    const lowest = Math.min(...CONFIG.warnAtMinutes);
+    const highest = Math.max(...CONFIG.warnAtMinutes);
+    const level = minsLeft <= lowest ? "danger" : minsLeft <= highest ? "warn" : "";
+    timerDisplay.className = level;
+    progressBar.className = level;
+
+    // Warnings (each fires once)
+    for (const w of CONFIG.warnAtMinutes) {
+        if (minsLeft <= w && !warned.has(w) && remaining > 0) {
+            warned.add(w);
+            // Don't announce a warning that was already passed before a page reload
+            if (minsLeft > w - 0.1) {
+                beep(2);
+                setStatus(`${w} MINUTES REMAINING`, "warning");
+            }
+        }
+    }
+
+    if (remaining <= 0) finishExam(state);
+}
+
+function finishExam(state) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    releaseAwake();
+
+    if (!state.finished) {
+        saveState({ ...state, finished: true });
+        beep(4, 660);
+    }
+
+    timerDisplay.textContent = "00:00";
+    timerDisplay.className = "danger";
+    progressBar.style.width = "0%";
+    $("examTitle").textContent = "Time's Up";
+
+    $("cancelExam").classList.add("hidden");
+    $("fullscreenButton").classList.add("hidden");
+    $("resetButton").classList.remove("hidden");
+
+    setStatus("TIME'S UP — Stop writing. Examination finished.", "error");
+}
+
+// ============================================================
+// ENDING / RESETTING (supervisor password required)
+// ============================================================
+async function resetToStart(message) {
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    releaseAwake();
+    await stopScanner(true);
+
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+
+    clearState();
+    pendingCandidate = null;
+    selection = { school: null, board: null, subject: null, paper: null };
+    warned = new Set();
+
+    $("barcodeInput").value = "";
+    $("passwordInput").value = "";
+    timerDisplay.textContent = "00:00";
+    timerDisplay.className = "";
+    progressBar.style.width = "100%";
+    progressBar.className = "";
+
+    show("school");
+    setStatus(message, "success");
+}
+
+async function endExamEarly() {
+    const ok = await askSupervisor(
+        "End examination",
+        "Supervisor password required to end the examination early."
+    );
+    if (ok) await resetToStart("EXAM ENDED — Ready for the next session.");
+}
+
+async function startNewSession() {
+    const ok = await askSupervisor(
+        "New session",
+        "Supervisor password required to start a new session."
+    );
+    if (ok) await resetToStart("Ready for the next candidate.");
+}
+
+// ============================================================
+// FULLSCREEN
+// ============================================================
+function toggleFullscreen() {
+    if (document.fullscreenElement) {
+        document.exitFullscreen();
+    } else if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+    }
+}
+
+// ============================================================
+// RESTORE AFTER REFRESH
+// ============================================================
+function restoreExam() {
+    const state = loadState();
+    if (!state) return;
+
+    selection.school = state.school;
+    selection.board = state.board;
+
+    if (!findCandidate(state.barcode)) {
+        clearState();
+        selection = { school: null, board: null, subject: null, paper: null };
         return;
     }
 
-    if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-    }
+    resumeExamView(state);
 
-    await stopScanner();
-
-    localStorage.removeItem("gcseExamCode");
-    localStorage.removeItem("gcseExamStart");
-    localStorage.removeItem("gcseExamEnd");
-
-    pendingCode = null;
-
-    document.getElementById("barcodeInput").value = "";
-    document.getElementById("passwordInput").value = "";
-
-    timerDisplay.textContent = "90:00";
-
-    examSection.classList.add("hidden");
-    passwordSection.classList.add("hidden");
-    scannerSection.classList.remove("hidden");
-
-    setStatus("EXAM CANCELLED — Ready to scan again.", "success");
-}
-
-async function cancelBeforeExam() {
-
-    await stopScanner();
-
-    pendingCode = null;
-
-    document.getElementById("barcodeInput").value = "";
-    document.getElementById("passwordInput").value = "";
-
-    passwordSection.classList.add("hidden");
-    scannerSection.classList.remove("hidden");
-
-    setStatus("Cancelled. Ready for barcode scan.");
-}
-
-// RESTORE TIMER
-function restoreExam() {
-
-    const code = localStorage.getItem("gcseExamCode");
-    const end = Number(localStorage.getItem("gcseExamEnd"));
-
-    if (code === ACCEPTED_CODE && end > 0) {
-
-        scannerSection.classList.add("hidden");
-        passwordSection.classList.add("hidden");
-        examSection.classList.remove("hidden");
-
-        updateTimer();
-
-        if (end > Date.now()) {
-            timerInterval = setInterval(updateTimer, 1000);
-        }
+    if (state.finished || state.end <= Date.now()) {
+        finishExam(state);
+    } else {
+        keepAwake();
+        setStatus("Examination restored after page reload.", "success");
     }
 }
 
-// BUTTONS
-document.getElementById("startButton").onclick = startScanner;
-document.getElementById("stopButton").onclick = stopScanner;
-
-document.getElementById("submitBarcode").onclick = () => {
-    verifyBarcode(document.getElementById("barcodeInput").value.trim());
-};
-
-document.getElementById("confirmPassword").onclick = verifyPassword;
-
-document.getElementById("cancelScanner").onclick = cancelBeforeExam;
-document.getElementById("cancelPassword").onclick = cancelBeforeExam;
-document.getElementById("cancelExam").onclick = cancelExam;
-
-// ENTER KEY
-document.getElementById("barcodeInput").addEventListener("keydown", event => {
-    if (event.key === "Enter") {
-        verifyBarcode(event.target.value.trim());
+// Warn if someone tries to leave mid-exam
+window.addEventListener("beforeunload", event => {
+    const state = loadState();
+    if (state && !state.finished && state.end > Date.now()) {
+        event.preventDefault();
+        event.returnValue = "";
     }
 });
 
-document.getElementById("passwordInput").addEventListener("keydown", event => {
-    if (event.key === "Enter") {
-        verifyPassword();
-    }
+// ============================================================
+// EVENTS
+// ============================================================
+startButton.onclick = startScanner;
+stopButton.onclick = () => stopScanner();
+
+$("backToSchool").onclick  = () => goBack("school");
+$("backToBoard").onclick   = () => goBack("board");
+$("backToSubject").onclick = () => goBack("subject"); // paper list -> subject list
+$("backToPaper").onclick   = () => goBack("paper");
+
+$("submitBarcode").onclick = () => verifyBarcode($("barcodeInput").value.trim());
+$("confirmPassword").onclick = verifyPassword;
+$("cancelPassword").onclick = async () => {
+    await stopScanner(true);
+    pendingCandidate = null;
+    $("passwordInput").value = "";
+    show("scanner");
+    setStatus("Ready for barcode scan.");
+};
+$("cancelExam").onclick = endExamEarly;
+$("resetButton").onclick = startNewSession;
+$("fullscreenButton").onclick = toggleFullscreen;
+
+$("barcodeInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") verifyBarcode(e.target.value.trim());
+});
+$("passwordInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") verifyPassword();
 });
 
 // STARTUP
+renderSchools();
 restoreExam();
-
 </script>
 
 </body>
